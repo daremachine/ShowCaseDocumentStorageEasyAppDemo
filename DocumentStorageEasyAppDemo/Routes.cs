@@ -14,16 +14,30 @@ namespace DocumentStorageEasyAppDemo.Routes
                 IDocumentStorageService service)
                 =>
             {
-                httpResponse.StatusCode = StatusCodes.Status201Created;
-                await service.DocumentAdd(new Document(model.Id, model.Tags, model.Data?.ToString()));
+                try
+                {
+                    httpResponse.StatusCode = StatusCodes.Status201Created;
+                    await service.DocumentAdd(new Document(model.Id, model.Tags, model.Data?.ToString()));
+                }
+                catch (DocumentAlreadyExistWithIdException)
+                {
+                    httpResponse.StatusCode = StatusCodes.Status409Conflict;
+                }
             });
             group.MapPut("/", async ([FromBody] DocumentModel model,
                 HttpResponse httpResponse,
                 IDocumentStorageService service)
                 =>
             {
-                httpResponse.StatusCode = StatusCodes.Status204NoContent;
-                await service.DocumentUpdate(model.Id, model.Tags, model.Data?.ToString());
+                try
+                {
+                    httpResponse.StatusCode = StatusCodes.Status204NoContent;
+                    await service.DocumentUpdate(model.Id, model.Tags, model.Data?.ToString());
+                }
+                catch (DocumentNotFoundException)
+                {
+                    httpResponse.StatusCode = StatusCodes.Status404NotFound;
+                }
             });
             group.MapGet("/{id}", async (string id,
                 [FromHeader(Name = "ContentType")] string? contentType,
@@ -31,7 +45,7 @@ namespace DocumentStorageEasyAppDemo.Routes
                 IDocumentStorageService service)
                 =>
             {
-                if(string.IsNullOrEmpty(contentType)) contentType = "application/json";
+                if (string.IsNullOrEmpty(contentType)) contentType = "application/json";
                 httpResponse.ContentType = contentType;
                 try
                 {
@@ -44,7 +58,7 @@ namespace DocumentStorageEasyAppDemo.Routes
                 catch (DocumentNotFoundException)
                 {
                     httpResponse.StatusCode = StatusCodes.Status404NotFound;
-                    return null;
+                    return Results.File(Array.Empty<byte>(), contentType, "");
                 }
             });
 

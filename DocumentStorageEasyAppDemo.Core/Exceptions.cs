@@ -10,6 +10,10 @@ namespace DocumentStorageEasyAppDemo.Core
     {
         public DocumentNotFoundException(string id) : base($"Document {id} not found") { }
     }
+    public class DocumentAlreadyExistWithIdException : Exception
+    {
+        public DocumentAlreadyExistWithIdException(string id) : base($"Document already exist with {id}") { }
+    }
 
     public class TypeConverterNotRegisteredException : Exception
     {

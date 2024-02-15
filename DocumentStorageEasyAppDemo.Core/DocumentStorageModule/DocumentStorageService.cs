@@ -29,6 +29,9 @@ namespace DocumentStorageEasyAppDemo.DocumentStorageModule
 
         public async Task DocumentAdd(Document document)
         {
+            var documentExist = await _storageProvider.Get(document.Id);
+            if (documentExist != null) throw new DocumentAlreadyExistWithIdException(document.Id);
+
             await _storageProvider.Add(document);
         }
 
